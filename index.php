@@ -80,9 +80,38 @@ $map->get('todo.list', '/', function ($request) use ($twig) {
 $map->post('todo.add', '/add', function ($request) {
     $data = $request->getParsedBody();
 
-    $tasks = new Task();
-    $tasks->description = $data['description'];
-    $tasks->save();
+    $task = new Task();
+    $task->description = $data['description'];
+    $task->save();
+
+    $response = new Zend\Diactoros\Response\RedirectResponse('/');
+    return $response;
+});
+
+$map->get('todo.check', '/check/{id}', function ($request) {
+    $id = $request->getAttribute('id');
+    $task = Task::find($id);
+    $task->done = True;
+    $task->save();
+    
+    $response = new Zend\Diactoros\Response\RedirectResponse('/');
+    return $response;
+});
+
+$map->get('todo.uncheck', '/uncheck/{id}', function ($request) {
+    $id = $request->getAttribute('id');
+    $task = Task::find($id);
+    $task->done = False;
+    $task->save();
+    
+    $response = new Zend\Diactoros\Response\RedirectResponse('/');
+    return $response;
+});
+
+$map->get('todo.delete', '/delete/{id}', function ($request) {
+    $id = $request->getAttribute('id');
+    $task = Task::find($id);
+    $task->delete();
     
     $response = new Zend\Diactoros\Response\RedirectResponse('/');
     return $response;

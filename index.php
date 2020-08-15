@@ -11,6 +11,8 @@ require_once 'Task.php';
 use Relay\Relay;
 
 use Illuminate\Database\Capsule\Manager as Capsule;
+use Zend\Diactoros\Response\JsonResponse;
+use Zend\Diactoros\Response\EmptyResponse;
 
 $capsule = new Capsule;
 
@@ -115,6 +117,37 @@ $map->get('todo.delete', '/delete/{id}', function ($request) {
     
     $response = new Zend\Diactoros\Response\RedirectResponse('/');
     return $response;
+});
+
+$map->get('api.task.get','/api/v1/tasks',function ($request){
+    $task = Task::all();
+    return new JsonResponse($task);
+});
+
+$map->post('api.task.post','/api/v1/tasks',function ($request){
+    $data = json_decode($request->getBody()->getContents(),true);
+
+    $task = new Task();
+    $task->description = $data['description'];
+    $task->save();
+    return new EmptyResponse(201);
+});
+
+$map->patch('api.task.patch','/api/v1/tasks/{id}',function ($request){
+    $data = json_decode($request->getBody()->getContents(),true);
+    $id = $request->getAttribute('id');
+    $task = Task::find($id);
+    $task->done = $data['done'];
+    $task->save();
+    return new JsonResponse($task);
+});
+
+$map->delete('api.task.delete','/api/v1/tasks/{id}',function ($request){
+    $data = json_decode($request->getBody()->getContents(),true);
+    $id = $request->getAttribute('id');
+    $task = Task::find($id);
+    $task->delete();
+    return new EmptyResponse(204);
 });
 
 $relay = new Relay([
